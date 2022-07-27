@@ -1,0 +1,49 @@
+
+name: 'Production deployment'
+
+on:
+ push:
+   branches:
+     - main
+   paths-ignore:
+     - '**.md'
+ pull_request:
+   paths-ignore:
+     - '**.md'
+
+jobs:
+ Deploy:
+ 
+  runs-on: ubuntu-latest
+  
+  strategy:
+    matrix:
+      node-version: [16.13.2]
+      
+  steps:
+  - name: Checkout
+    uses: actions/checkout@v3
+
+  - name: Setup node
+    uses: actions/setup-node@v3
+    with:
+     node-version: ${{ matrix.node-version }}
+     # cache: npm
+
+  - name: Install dependencies
+    run: npm install --legacy-peer-deps
+
+  - name: Build static file
+    run: CI=false npm run build
+
+  - name: Configure AWS Credentials to deploy
+    uses: aws-actions/configure-aws-credentials@v1
+    with:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-region: ${{ secrets.AWS_REGION }}
+
+  - name: Copy files to the s3 bucket with the AWS CLI
+    run: |
+      aws s3 sync ./build s3://${{ secrets.AWS_S3_BUCKET_NAME }}
+      

@@ -1,4 +1,4 @@
-# Deploy Python FastAPI app
+# Deploy Python FastAPI app in Docker
 
 - [Navigate to Render Dashboard](https://dashboard.render.com/)
 - Choose **New +** and choose **Web Service**
